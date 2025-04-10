@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Math</title>
+  <base href="/">
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 97%;
+      height: 96%;
+    }
+
+    .main-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 10px 0 10px 40px;
+    }
+
+    .header-half {
+      display: flex;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-right: 40px;
+    }
+
+    #regenerate-btn {
+      margin-right: 80px;
+    }
+
+    #regenerate-btn:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    .dd-container {
+      margin-right: 20px;
+    }
+
+    #mistakes {
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .mistakes-count {
+      color: red;
+      font-size: 20px;
+    }
+
+    .mistakes-count-zero {
+      color: green;
+      font-size: 20px;
+    }
+
+    #form-container {
+      width: 100%;
+      height: 100%;
+      padding: 10px 30px;
+    }
+
+    #math-form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #exercises-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .exercise-container {
+      width: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 26px;
+      font-weight: 900;
+      margin: 10px;
+      padding: 0 20px;
+      background-color: aliceblue;
+      box-shadow: 0 10px 20px -10px rgba(131, 142, 171, 0.35);
+    }
+
+    .exercise {
+      flex: 1 0 auto;
+    }
+
+    .result-input {
+      flex: 0 0 auto;
+      width: 80px;
+      height: 36px;
+      font-size: 26px;
+    }
+
+    .buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #results-btn {
+      border: none;
+      outline: none;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      background-color: purple;
+      color: #fff;
+      height: 50px;
+      padding: 0 18px;
+      white-space: nowrap;
+    }
+
+    #results-btn:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    /* animation ----------------------- */
+    #success-animation {
+      display: none;
+      position: absolute;
+      top: 30%;
+      left: 35%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      animation: success 3s ease-in-out infinite;
+    }
+
+    .success-text {
+      font-size: 80px;
+      color: #4CAF50;
+    }
+
+    @keyframes success {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(2);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div class="header">
+      <div class="header-half">
+
+        <!-- <h1 class="title">Math</h1> -->
+        <button type="button"
+                id="regenerate-btn">Re-generate</button>
+
+        <div class="dd-container">
+          <!-- <label for="max-result-select">Max:</label> -->
+          <select id="max-result-select">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="100"
+                    selected>100</option>
+          </select>
+        </div>
+        <div class="dd-container">
+          <!-- <label for="exercise-types-select">Tip:</label> -->
+          <select id="exercise-types-select">
+            <option value="sum">Sum</option>
+            <option value="sub">Sub</option>
+            <option value="sumAndsub">Sum & Sub</option>
+            <option value="sumAndSub1">Sum & Sub (1)</option>
+            <option value="sumAndSub2">Sum & Sub (2)</option>
+            <option value="equationSum">Equation Sum</option>
+            <option value="equationSub">Equation Sub</option>
+            <option value="equationSumAndSub"
+                    selected>Equation Sum & Sub</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+        <div class="dd-container">
+          <!-- <label for="exercise-types-select">Tip:</label> -->
+          <select id="exercises-count-select">
+            <option value="3">3</option>
+            <option value="6">6</option>
+            <option value="9">9</option>
+            <option value="12"
+                    selected>12</option>
+          </select>
+        </div>
+      </div>
+      <div class="header-half"
+           id="mistakes">
+        Mistakes: &nbsp; <span class="mistakes-count-zero">0</span>
+      </div>
+    </div>
+
+    <div id="form-container">
+      <form method="POST"
+            id="math-form"
+            action="javascript:void(0)">
+
+        <div id="exercises-container">
+          <!-- exercises to be generated here -->
+        </div>
+
+        <br>
+        <br>
+        <br>
+        <div class="buttons">
+          <button type="submit"
+                  id="results-btn">Check results</button>
+          <!-- <button type="button"
+                  id="clear-btn">Obrisi</button> -->
+        </div>
+      </form>
+    </div>
+
+    <div id="success-animation">
+      <span class="success-text">😊 Bravo! 😊</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      let EXERCISES_COUNT = 12;
+      let RESULT_MAX = 100;
+      let EXERCISE_TYPES = getExerciseTypes('equationSumAndSub'); // default - can be changed by the user in the dropdown (if changing default make sure to also change 'selected' attribute in the dropdown)
+
+      let exercises = [];
+      let mistakes = 0;
+
+      const mathForm = document.getElementById('math-form');
+      const resultsBtn = document.getElementById('results-btn');
+      const exercisesContainer = document.getElementById('exercises-container');
+      const mistakesContainer = document.getElementById('mistakes');
+      const maxResultSelect = document.getElementById('max-result-select');
+      const exerciseTypesSelect = document.getElementById('exercise-types-select');
+      const exercisesCountSelect = document.getElementById('exercises-count-select');
+      const regenerateBtn = document.getElementById('regenerate-btn');
+
+      generateExercises();
+
+      function generateExercises() {
+        exercises = [];
+        mistakes = 0;
+        mistakesContainer.innerHTML = `Mistakes: &nbsp; <span class="mistakes-count-zero">0</span>`; // reset
+        exercisesContainer.innerHTML = '';
+
+        for (let i = 1; i <= EXERCISES_COUNT; i++) {
+          const randomExcerciseTypeIndex = randomIntFromInterval(0, EXERCISE_TYPES.length - 1);
+          const exercise = EXERCISE_TYPES[randomExcerciseTypeIndex](RESULT_MAX);
+          exercise.id = i;
+          exercises.push(exercise);
+        }
+
+        exercises.forEach((e, i) => {
+          exercisesContainer.innerHTML += `        
+          <div class="exercise-container">
+            <div class="exercise">
+              <span>${e.type === 'equation' ? e.str : e.str + ' ='} </span>
+            </div>
+            <input type="number"
+                  class="result-input"
+                  name="${e.id}"
+                  value="">
+            <br>
+            <br>
+            <br>
+          </div>
+        `;
+        });
+      }
+
+      mathForm.addEventListener('submit', function (event) {
+        let wrongCount = 0;
+        exercises.forEach(e => {
+          const input = mathForm.elements[e.id - 1];
+          const inputValue = input.value;
+
+          if (inputValue === String(e.result)) {
+            input.style['border'] = '2px solid green';
+          } else {
+            input.style['border'] = '2px solid red';
+            wrongCount++;
+
+            if (inputValue && inputValue !== e.inputValue) {
+              // if the input is not empty and the value is different than the previous one
+              mistakes++;
+              mistakesContainer.innerHTML = `Mistakes: &nbsp; <span class="mistakes-count">${mistakes}</span>`;
+            }
+          }
+
+          e.inputValue = inputValue;
+
+        });
+
+        if (wrongCount === 0) {
+          document.getElementById('success-animation').style.display = 'block';
+          setTimeout(() => {
+            document.getElementById('success-animation').style.display = 'none';
+          }, 3000);
+        }
+      });
+
+      maxResultSelect.addEventListener('change', function (event) {
+        RESULT_MAX = Number(event.target.value);
+        generateExercises();
+      });
+
+      exercisesCountSelect.addEventListener('change', function (event) {
+        EXERCISES_COUNT = Number(event.target.value);
+        generateExercises();
+      });
+
+      exerciseTypesSelect.addEventListener('change', function (event) {
+        EXERCISE_TYPES = getExerciseTypes(event.target.value);
+        generateExercises();
+      });
+
+      regenerateBtn.addEventListener('click', function (event) {
+        generateExercises();
+      });
+
+      function getExerciseTypes(type) {
+        switch (type) {
+          case 'sum':
+            return [sumExercise];
+            break;
+          case 'sub':
+            return [subExercise];
+            break;
+          case 'sumAndsub':
+            return [sumExercise, subExercise];
+            break;
+          case 'sumAndSub1':
+            return [sumExercise, subExercise, sumAndSubExercise, subAndSumExercise];
+            break;
+          case 'sumAndSub2':
+            return [sumExercise, subExercise, sumAndSubExercise, subAndSumExercise, sumAndSubDoubleExercise];
+            break;
+          case 'equationSum':
+            return [equationSum1Exercise, equationSum2Exercise];
+            break;
+          case 'equationSub':
+            return [equationSub1Exercise, equationSub2Exercise];
+            break;
+          case 'equationSumAndSub':
+            return [equationSum1Exercise, equationSum2Exercise, equationSub1Exercise, equationSub2Exercise];
+            break;
+          default:
+            return [sumExercise, subExercise, sumAndSubExercise, subAndSumExercise, sumAndSubDoubleExercise, equationSum1Exercise, equationSum2Exercise, equationSub1Exercise, equationSub2Exercise];
+            break;
+        }
+      }
+
+
+      function randomIntFromInterval(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min)
+      }
+
+      function subExercise(max) {
+        const a = randomIntFromInterval(0, max);
+        const b = randomIntFromInterval(0, a);
+        return {
+          str: `${a} - ${b}`,
+          result: a - b,
+          numbers: [a, b]
+        }
+      }
+
+      function sumExercise(max) {
+        const a = randomIntFromInterval(0, max);
+        const b = randomIntFromInterval(0, max - a);
+        if (a % 2 === 0) {
+          return {
+            str: `${a} + ${b}`,
+            result: a + b,
+            numbers: [a, b]
+          }
+        } else {
+          return {
+            str: `${b} + ${a}`,
+            result: b + a,
+            numbers: [b, a]
+          }
+        }
+      }
+
+      function sumAndSubExercise(max) {
+        const sum = sumExercise(max);
+        const randomA = randomIntFromInterval(0, sum.result);
+        return {
+          str: `(${sum.str}) - ${randomA}`,
+          result: sum.result - randomA
+        }
+      }
+
+      function subAndSumExercise(max) {
+        const randomA = randomIntFromInterval(2, max);
+        const maxHalf = randomA / 2;
+        const sum = sumExercise(maxHalf % 2 === 0 ? maxHalf : maxHalf - 1);
+        return {
+          str: `${randomA} - (${sum.str})`,
+          result: randomA - sum.result
+        }
+      }
+
+      function sumAndSubDoubleExercise(max) {
+        const subA = subExercise(max);
+        const subB = subExercise(max - subA.result);
+        // const sum = sumExercise(max);
+        // const randomA = randomIntFromInterval(1, sum.result);
+
+        return {
+          str: `(${subA.str}) + (${subB.str})`,
+          result: subA.result + subB.result
+        }
+      }
+
+      function equationSum1Exercise(max) {
+        const sum = sumExercise(max);
+        return {
+          str: `x + ${sum.numbers[1]} = ${sum.result}`,
+          result: sum.numbers[0],
+          type: 'equation'
+        }
+      }
+
+      function equationSum2Exercise(max) {
+        const sum = sumExercise(max);
+        return {
+          str: `${sum.numbers[0]} + x = ${sum.result}`,
+          result: sum.numbers[1],
+          type: 'equation'
+        }
+      }
+
+      function equationSub1Exercise(max) {
+        const sub = subExercise(max);
+        return {
+          str: `x - ${sub.numbers[1]} = ${sub.result}`,
+          result: sub.numbers[0],
+          type: 'equation'
+        }
+      }
+
+      function equationSub2Exercise(max) {
+        const sub = subExercise(max);
+        return {
+          str: `${sub.numbers[0]} - x = ${sub.result}`,
+          result: sub.numbers[1],
+          type: 'equation'
+        }
+      }
+
+    })();
+  </script>
+</body>
+
+</html>
