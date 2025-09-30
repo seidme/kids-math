@@ -54,10 +54,13 @@
       margin-right: 20px;
     }
 
-    #mistakes {
+    .header-element {
       font-size: 16px;
       font-weight: 900;
+      margin-left: 40px;
     }
+
+    .time-passed {}
 
     .mistakes-count {
       color: red;
@@ -212,9 +215,11 @@
           </select>
         </div>
       </div>
-      <div class="header-half"
-           id="mistakes">
-        Mistakes: &nbsp; <span class="mistakes-count-zero">0</span>
+      <div class="header-half">
+        <div class="header-element"
+             id="time-passed">Time: &nbsp; <span class="time-passed-count">00:00</span></div>
+        <div class="header-element"
+             id="mistakes">Mistakes: &nbsp; <span class="mistakes-count-zero">0</span></div>
       </div>
     </div>
 
@@ -252,11 +257,14 @@
 
       let exercises = [];
       let mistakes = 0;
+      let startTime;
+      let timerInterval;
 
       const mathForm = document.getElementById('math-form');
       const resultsBtn = document.getElementById('results-btn');
       const exercisesContainer = document.getElementById('exercises-container');
       const mistakesContainer = document.getElementById('mistakes');
+      const timePassedContainer = document.getElementById('time-passed');
       const maxResultSelect = document.getElementById('max-result-select');
       const exerciseTypesSelect = document.getElementById('exercise-types-select');
       const exercisesCountSelect = document.getElementById('exercises-count-select');
@@ -293,6 +301,17 @@
           </div>
         `;
         });
+
+        if (timerInterval) {
+          clearInterval(timerInterval);
+        }
+
+        startTime = Date.now();
+        console.log('LOGS: Exercise started: ', new Date());
+        timerInterval = setInterval(() => {
+          const timePassed = getTimePassed(startTime);
+          document.getElementById('time-passed').innerHTML = `Time: &nbsp; <span class="time-passed-count">${timePassed.minutes}:${timePassed.seconds}</span>`;
+        }, 1000);
       }
 
       mathForm.addEventListener('submit', function (event) {
@@ -319,9 +338,34 @@
         });
 
         if (wrongCount === 0) {
-          document.getElementById('success-animation').style.display = 'block';
+          const successElement = document.getElementById('success-animation');
+          const timePassed = getTimePassed(startTime);
+          successElement.innerHTML = `
+            <span class="success-text">😊 Bravo! 😊</span>
+            <br>
+            <span class="success-text" style="font-size:40px; color: blue;">Time: ${timePassed.minutes}:${timePassed.seconds}</span>
+          `;
+          successElement.style.display = 'block';
+
+          console.log('LOGS: Time passed:', timePassed);
+
+          // const resultsToStore = {
+          //   time: timePassed,
+          //   exercisesCount: EXERCISES_COUNT,
+          //   maxResult: RESULT_MAX,
+          //   exerciseTypes: exerciseTypesSelect.value
+          // };
+
+          // const key = `${RESULT_MAX}-${exerciseTypesSelect.value}-${EXERCISES_COUNT}`;
+          // var resultsToStore = [
+          //   {key: timePassed}
+          // ];
+
+
+          clearInterval(timerInterval);
+
           setTimeout(() => {
-            document.getElementById('success-animation').style.display = 'none';
+            successElement.style.display = 'none';
           }, 3000);
         }
       });
@@ -375,6 +419,13 @@
             return [sumExercise, subExercise, sumAndSubExercise, subAndSumExercise, sumAndSubDoubleExercise, equationSum1Exercise, equationSum2Exercise, equationSub1Exercise, equationSub2Exercise];
             break;
         }
+      }
+
+      function getTimePassed(startTime) {
+        const timePassed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = String(Math.floor(timePassed / 60)).padStart(2, '0');
+        const seconds = String(timePassed % 60).padStart(2, '0');
+        return { minutes, seconds };
       }
 
 
